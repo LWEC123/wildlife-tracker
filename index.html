@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#15803d">
+    <title>Wildlife Sighting PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        /* App header */
+        .app-header {
+            background-color: #15803d;
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .app-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        /* Tabs navigation */
+        .tab-nav {
+            display: flex;
+            background-color: white;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4b5563;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button.active {
+            color: #15803d;
+            border-bottom-color: #15803d;
+            background-color: #f0fdf4;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background-color: #f9fafb;
+        }
+        
+        /* Tab content */
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Form styles */
+        .form-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .form-section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            color: #15803d;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .form-section-title svg {
+            margin-right: 0.5rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        .grid-cols-1,
+        .grid-cols-2,
+        .grid-cols-3 {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .grid-cols-1 {
+            grid-template-columns: 1fr;
+        }
+        
+        @media (min-width: 640px) {
+            .grid-cols-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .grid-cols-3 {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
+        .form-field {
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+        }
+        
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-input:disabled,
+        .form-select:disabled,
+        .form-input[readonly] {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+        
+        .form-input.error,
+        .form-select.error {
+            border-color: #ef4444;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+        }
+        
+        .checkbox-grid.error {
+            border-color: #ef4444;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-item input {
+            margin-right: 0.5rem;
+        }
+        
+        .checkbox-item label {
+            font-size: 0.875rem;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .validation-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: #15803d;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #166534;
+        }
+        
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        /* Camera styles */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: #000;
+        }
+        
+        .camera-preview {
+            width: 100%;
+            display: block;
+        }
+        
+        .captured-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Map styles */
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            background-color: #e5e7eb;
+            position: relative;
+        }
+        
+        .map-placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .tracking-info {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .coordinates-display {
+            margin-top: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            background-color: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Sightings list */
+        .sightings-list {
+            list-style: none;
+        }
+        
+        .sighting-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        
+        .sighting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sighting-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .sighting-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .sighting-details {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sighting-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+        
+        .sighting-tag {
+            font-size: 0.75rem;
+            padding: 0.125rem 0.375rem;
+            background-color: #f3f4f6;
+            border-radius: 1rem;
+            color: #6b7280;
+        }
+        
+        .sighting-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .sighting-photo {
+            width: 100%;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Pending sync indicator */
+        .sync-indicator {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #f59e0b;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 50;
+        }
+        
+        .offline-indicator {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            background-color: #6b7280;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 50;
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+        }
+        
+        .toast {
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            max-width: 300px;
+            transform: translateX(calc(100% + 1rem));
+            transition: transform 0.3s ease-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .toast-error {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .toast-info {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .toast-warning {
+            background-color: #f59e0b;
+            color: white;
+        }
+        
+        .toast-icon {
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .toast-message {
+            font-size: 0.875rem;
+        }
+        
+        /* Install PWA prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 90;
+        }
+        
+        .install-prompt-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .install-prompt-text {
+            font-size: 0.875rem;
+        }
+        
+        .install-prompt-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="container">
+            <h1 class="app-title">Wildlife Sighting Tracker</h1>
+            <p class="app-subtitle">South Africa Conservation</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tab-nav">
+            <button class="tab-button active" data-tab="new-sighting">New Sighting</button>
+            <button class="tab-button" data-tab="sightings-list">My Sightings</button>
+            <button class="tab-button" data-tab="tracking">GPS Tracking</button>
+        </div>
+        
+        <!-- New Sighting Tab -->
+        <div id="new-sighting" class="tab-content active">
+            <!-- Photo Capture Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    <h2>Photo Capture</h2>
+                </div>
+                
+                <div id="camera-container" class="camera-container">
+                    <video id="camera-preview" class="camera-preview" autoplay playsinline></video>
+                </div>
+                
+                <div id="photo-preview" style="display: none;">
+                    <img id="captured-image" class="captured-image" alt="Captured sighting">
+                </div>
+                
+                <div class="camera-controls">
+                    <button id="start-camera" class="btn btn-secondary">Start Camera</button>
+                    <button id="capture-photo" class="btn btn-primary" disabled>Capture Photo</button>
+                    <button id="retake-photo" class="btn btn-secondary" style="display: none;">Retake</button>
+                </div>
+            </div>
+            
+            <!-- Taxonomic Classification -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    <h2>Taxonomic Classification</h2>
+                </div>
+                
+                <div class="grid-cols-3">
+                    <div class="form-field">
+                        <label class="form-label" for="order">Order *</label>
+                        <select id="order" class="form-select">
+                            <option value="">Select Order</option>
+                            <!-- Options loaded by JavaScript -->
+                        </select>
+                        <div id="order-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label" for="family">Family *</label>
+                        <select id="family" class="form-select" disabled>
+                            <option value="">Select Family</option>
+                            <!-- Options loaded by JavaScript -->
+                        </select>
+                        <div id="family-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label" for="species">Species *</label>
+                        <select id="species" class="form-select" disabled>
+                            <option value="">Select Species</option>
+                            <!-- Options loaded by JavaScript -->
+                        </select>
+                        <div id="species-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <p class="validation-hint">✅ Order must be selected before Family, and Family before Species</p>
+            </div>
+            
+            <!-- Location Information -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <h2>Location Information</h2>
+                </div>
+                
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <div>
+                            <p>Location will be displayed here</p>
+                            <p><small>Tap "Get Current Location" to update</small></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label">GPS Coordinates (WGS84) *</label>
+                        <button id="get-location" class="btn btn-secondary btn-sm">Get Current Location</button>
+                    </div>
+                    
+                    <div class="grid-cols-2">
+                        <div>
+                            <input id="latitude" type="text" class="form-input" placeholder="Latitude (e.g. -24.9982)">
+                            <div id="latitude-error" class="error-message"></div>
+                        </div>
+                        
+                        <div>
+                            <input id="longitude" type="text" class="form-input" placeholder="Longitude (e.g. 31.5968)">
+                            <div id="longitude-error" class="error-message"></div>
+                        </div>
+                    </div>
+                    <div id="coordinates-error" class="error-message"></div>
+                </div>
+                
+                <div class="grid-cols-2">
+                    <div class="form-field">
+                        <label class="form-label" for="habitat">Habitat Zone *</label>
+                        <select id="habitat" class="form-select">
+                            <option value="">Select Habitat</option>
+                            <!-- Options loaded by JavaScript -->
+                        </select>
+                        <div id="habitat-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label" for="waterDistance">Distance from Nearest Water Source (m) *</label>
+                        <input id="waterDistance" type="number" class="form-input" placeholder="e.g. 150" min="0" max="5000">
+                        <div id="waterDistance-error" class="error-message"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observation Details -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="8"></line>
+                    </svg>
+                    <h2>Observation Details</h2>
+                </div>
+                
+                <div class="grid-cols-2">
+                    <div class="form-field">
+                        <label class="form-label" for="date">Date of Sighting *</label>
+                        <input id="date" type="date" class="form-input">
+                        <div id="date-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label class="form-label" for="time">Time of Sighting *</label>
+                        <input id="time" type="time" class="form-input">
+                        <div id="time-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label" for="groupSize">Group Size *</label>
+                    <input id="groupSize" type="number" class="form-input" placeholder="e.g. 12" min="1">
+                    <div id="groupSize-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Observed Behavior * (Select at least one)</label>
+                    <div id="behaviors-container" class="checkbox-grid">
+                        <!-- Checkboxes loaded by JavaScript -->
+                    </div>
+                    <div id="behaviors-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Weather Conditions * (Select at least one)</label>
+                    <div id="weather-container" class="checkbox-grid">
+                        <!-- Checkboxes loaded by JavaScript -->
+                    </div>
+                    <div id="weather-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label" for="notes">Additional Notes</label>
+                    <textarea id="notes" class="form-input" rows="3" placeholder="Enter any additional observations here..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button id="reset-form" class="btn btn-secondary">Reset Form</button>
+                <button id="submit-form" class="btn btn-primary">Save Sighting</button>
+            </div>
+        </div>
+        
+        <!-- Sightings List Tab -->
+        <div id="sightings-list" class="tab-content">
+            <div id="export-actions" style="margin-bottom: 1rem;">
+                <button id="export-all" class="btn btn-secondary">Export All as CSV</button>
+                <!-- More export options can be added here -->
+            </div>
+            
+            <div id="no-sightings" style="text-align: center; padding: 2rem 0; color: #6b7280; display: none;">
+                <p>No sightings recorded yet</p>
+                <p><small>Your saved sightings will appear here</small></p>
+            </div>
+            
+            <ul id="sightings-list-container" class="sightings-list">
+                <!-- Sightings will be listed here by JavaScript -->
+            </ul>
+        </div>
+        
+        <!-- GPS Tracking Tab -->
+        <div id="tracking" class="tab-content">
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <h2>GPS Tracking</h2>
+                </div>
+                
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <div>
+                            <p>Tracking map will display here</p>
+                            <p><small>Start tracking to record your path</small></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tracking-info">
+                    <p>Status: <span id="tracking-status">Not tracking</span></p>
+                    <p>Points recorded: <span id="tracking-points">0</span></p>
+                    <p>Distance traveled: <span id="tracking-distance">0 m</span></p>
+                </div>
+                
+                <div id="current-coordinates" class="coordinates-display">
+                    Waiting for location...
+                </div>
+                
+                <div class="form-actions">
+                    <button id="start-tracking" class="btn btn-primary">Start Tracking</button>
+                    <button id="stop-tracking" class="btn btn-secondary" disabled>Stop Tracking</button>
+                    <button id="save-tracking" class="btn btn-secondary" disabled>Save Track</button>
+                </div>
+                
+                <p class="validation-hint">GPS tracking will continue in the background while you record sightings</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Offline indicator -->
+    <div id="offline-indicator" class="offline-indicator">
+        You're offline
+    </div>
+    
+    <!-- Pending sync indicator -->
+    <div id="sync-indicator" class="sync-indicator">
+        <span id="pending-count">0</span> items pending sync
+    </div>
+    
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container">
+        <!-- Toasts will be added here by JavaScript -->
+    </div>
+    
+    <!-- Install PWA prompt -->
+    <div id="install-prompt" class="install-prompt">
+        <div class="install-prompt-content">
+            <div class="install-prompt-text">
+                Add this app to your home screen for offline use
+            </div>
+            <div class="install-prompt-buttons">
+                <button id="install-later" class="btn btn-secondary">Later</button>
+                <button id="install-app" class="btn btn-primary">Install</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Data for taxonomic classification
+        const taxonomicData = {
+            orders: ['Mammalia', 'Aves', 'Reptilia', 'Amphibia', 'Arthropoda'],
+            families: {
+                'Mammalia': ['Bovidae', 'Felidae', 'Canidae', 'Elephantidae', 'Rhinocerotidae', 'Hippopotamidae', 'Giraffidae', 'Hyaenidae', 'Cercopithecidae'],
+                'Aves': ['Accipitridae', 'Strigidae', 'Bucerotidae', 'Coraciidae', 'Meropidae', 'Columbidae'],
+                'Reptilia': ['Crocodylidae', 'Pythonidae', 'Viperidae', 'Elapidae', 'Varanidae'],
+                'Amphibia': ['Pipidae', 'Bufonidae', 'Hyperoliidae'],
+                'Arthropoda': ['Scorpionidae', 'Theraphosidae', 'Formicidae']
+            },
+            species: {
+                'Bovidae': ['Syncerus caffer (African Buffalo)', 'Tragelaphus strepsiceros (Greater Kudu)', 'Aepyceros melampus (Impala)', 'Connochaetes taurinus (Blue Wildebeest)', 'Kobus ellipsiprymnus (Waterbuck)'],
+                'Felidae': ['Panthera leo (Lion)', 'Panthera pardus (Leopard)', 'Acinonyx jubatus (Cheetah)', 'Caracal caracal (Caracal)', 'Leptailurus serval (Serval)'],
+                'Elephantidae': ['Loxodonta africana (African Elephant)'],
+                'Rhinocerotidae': ['Ceratotherium simum (White Rhinoceros)', 'Diceros bicornis (Black Rhinoceros)'],
+                'Hippopotamidae': ['Hippopotamus amphibius (Hippopotamus)'],
+                'Giraffidae': ['Giraffa camelopardalis (Giraffe)'],
+                'Hyaenidae': ['Crocuta crocuta (Spotted Hyena)'],
+                'Canidae': ['Lycaon pictus (African Wild Dog)', 'Canis mesomelas (Black-backed Jackal)'],
+                'Cercopithecidae': ['Papio ursinus (Chacma Baboon)', 'Chlorocebus pygerythrus (Vervet Monkey)'],
+                'Accipitridae': ['Aquila rapax (Tawny Eagle)', 'Haliaeetus vocifer (African Fish Eagle)'],
+                'Strigidae': ['Bubo africanus (Spotted Eagle-Owl)'],
+                'Bucerotidae': ['Bucorvus leadbeateri (Southern Ground Hornbill)'],
+                'Coraciidae': ['Coracias caudatus (Lilac-breasted Roller)'],
+                'Meropidae': ['Merops nubicoides (Southern Carmine Bee-eater)'],
+                'Columbidae': ['Streptopelia capicola (Cape Turtle Dove)'],
+                'Crocodylidae': ['Crocodylus niloticus (Nile Crocodile)'],
+                'Pythonidae': ['Python natalensis (Southern African Python)'],
+                'Viperidae': ['Bitis arietans (Puff Adder)'],
+                'Elapidae': ['Naja mossambica (Mozambique Spitting Cobra)'],
+                'Varanidae': ['Varanus albigularis (Rock Monitor)'],
+                'Pipidae': ['Xenopus laevis (African Clawed Frog)'],
+                'Bufonidae': ['Schismaderma carens (Red Toad)'],
+                'Hyperoliidae': ['Hyperolius marmoratus (Painted Reed Frog)'],
+                'Scorpionidae': ['Opistophthalmus glabrifrons (Burrowing Scorpion)'],
+                'Theraphosidae': ['Harpactira hamiltoni (Golden-brown Baboon Spider)'],
+                'Formicidae': ['Anoplolepis custodiens (Pugnacious Ant)']
+            }
+        };
+
+        // Habitat zones in South Africa
+        const habitatZones = [
+            'Savanna Grassland',
+            'Riparian Woodland',
+            'Thornveld',
+            'Bushveld',
+            'Dry River Bed', 
+            'Rocky Outcrop', 
+            'Wetland',
+            'Mountain Slope',
+            'Vlei',
+            'Reeded Area',
+            'Floodplain',
+            'Acacia Thicket'
+        ];
+
+        // Weather conditions
+        const weatherConditions = [
+            'Clear',
+            'Partly Cloudy',
+            'Overcast',
+            'Light Rain',
+            'Heavy Rain',
+            'Thunderstorm',
+            'Misty',
+            'Hot',
+            'Warm',
+            'Cool',
+            'Cold',
+            'No Wind',
+            'Light Wind',
+            'Strong Wind'
+        ];
+
+        // Behavior options
+        const behaviorOptions = [
+            'Resting',
+            'Grazing/Feeding',
+            'Drinking',
+            'Moving/Walking',
+            'Running',
+            'Swimming',
+            'Hunting',
+            'Vigilant',
+            'Aggressive',
+            'Mating',
+            'Grooming',
+            'Nursing Young',
+            'Territorial Display',
+            'Vocalizing'
+        ];
+
+        // Global variables
+        let formData = {
+            order: '',
+            family: '',
+            species: '',
+            date: getCurrentDate(),
+            time: getCurrentTime(),
+            latitude: '',
+            longitude: '',
+            habitat: '',
+            waterDistance: '',
+            groupSize: '',
+            behaviors: [],
+            weather: [],
+            notes: '',
+            photoUrl: null,
+            trackingPath: [] // Store GPS path if tracking was active
+        };
+
+        let cameraStream = null;
+        let tracking = false;
+        let trackingPath = [];
+        let trackingWatchId = null;
+        let deferredPrompt = null;
+        let sightingId = '';
+        let errors = {};
+
+        // DOM Elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the app when the DOM is loaded
+            initApp();
+        });
+
+        // Initialize the application
+        function initApp() {
+            // Register service worker
+            registerServiceWorker();
+            
+            // Initialize tabs
+            initTabs();
+            
+            // Initialize form
+            initForm();
+            
+            // Initialize camera
+            initCamera();
+            
+            // Initialize tracking
+            initTracking();
+            
+            // Initialize offline detection
+            initOfflineDetection();
+            
+            // Initialize install prompt
+            initInstallPrompt();
+            
+            // Load saved sightings
+            loadSavedSightings();
+            
+            // Check pending sync
+            checkPendingSync();
+        }
+
+        // Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registered successfully:', reg.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+        }
+
+        // Initialize tabs
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Add active class to selected tab
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // Initialize form
+        function initForm() {
+            // Set default date and time
+            document.getElementById('date').value = formData.date;
+            document.getElementById('time').value = formData.time;
+            
+            // Populate dropdowns
+            populateOrderDropdown();
+            populateHabitatDropdown();
+            
+            // Create behavior checkboxes
+            createCheckboxes(behaviorOptions, document.getElementById('behaviors-container'), 'behavior', handleBehaviorChange);
+            
+            // Create weather checkboxes
+            createCheckboxes(weatherConditions, document.getElementById('weather-container'), 'weather', handleWeatherChange);
+            
+            // Add event listeners
+            document.getElementById('order').addEventListener('change', handleOrderChange);
+            document.getElementById('family').addEventListener('change', handleFamilyChange);
+            document.getElementById('species').addEventListener('change', handleSpeciesChange);
+            
+            document.getElementById('date').addEventListener('change', handleDateChange);
+            document.getElementById('time').addEventListener('change', handleTimeChange);
+            
+            document.getElementById('get-location').addEventListener('click', getCurrentLocation);
+            document.getElementById('latitude').addEventListener('input', handleCoordinateChange);
+            document.getElementById('longitude').addEventListener('input', handleCoordinateChange);
+            document.getElementById('habitat').addEventListener('change', handleHabitatChange);
+            document.getElementById('waterDistance').addEventListener('input', handleWaterDistanceChange);
+            
+            document.getElementById('groupSize').addEventListener('input', handleGroupSizeChange);
+            document.getElementById('notes').addEventListener('input', handleNotesChange);
+            
+            document.getElementById('reset-form').addEventListener('click', resetForm);
+            document.getElementById('submit-form').addEventListener('click', handleSubmit);
+            
+            document.getElementById('export-all').addEventListener('click', exportAllSightings);
+        }
+
+        // Initialize camera
+        function initCamera() {
+            const startCameraBtn = document.getElementById('start-camera');
+            const capturePhotoBtn = document.getElementById('capture-photo');
+            const retakePhotoBtn = document.getElementById('retake-photo');
+            const cameraPreview = document.getElementById('camera-preview');
+            const photoPreview = document.getElementById('photo-preview');
+            const capturedImage = document.getElementById('captured-image');
+            
+            startCameraBtn.addEventListener('click', function() {
+                if (cameraStream) {
+                    // Camera is already active
+                    return;
+                }
+                
+                // Request camera access
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function(stream) {
+                        cameraStream = stream;
+                        cameraPreview.srcObject = stream;
+                        
+                        // Show camera container and enable capture button
+                        document.getElementById('camera-container').style.display = 'block';
+                        capturePhotoBtn.disabled = false;
+                        
+                        // Hide the captured photo if shown
+                        photoPreview.style.display = 'none';
+                        retakePhotoBtn.style.display = 'none';
+                        
+                        showToast('Camera started successfully', 'success');
+                    })
+                    .catch(function(error) {
+                        console.error('Error accessing camera:', error);
+                        showToast('Failed to access camera: ' + error.message, 'error');
+                    });
+            });
+            
+            capturePhotoBtn.addEventListener('click', function() {
+                if (!cameraStream) return;
+                
+                // Create canvas to capture the image
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                // Set canvas dimensions to video dimensions
+                canvas.width = cameraPreview.videoWidth;
+                canvas.height = cameraPreview.videoHeight;
+                
+                // Draw video frame to canvas
+                context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+                
+                // Convert canvas to data URL
+                const imageDataUrl = canvas.toDataURL('image/jpeg');
+                
+                // Display captured image
+                capturedImage.src = imageDataUrl;
+                
+                // Hide camera preview, show captured image
+                document.getElementById('camera-container').style.display = 'none';
+                photoPreview.style.display = 'block';
+                
+                // Show retake button, hide capture button
+                retakePhotoBtn.style.display = 'inline-block';
+                
+                // Store image data in form data
+                formData.photoUrl = imageDataUrl;
+                
+                // Stop camera stream
+                stopCamera();
+                
+                showToast('Photo captured successfully', 'success');
+            });
+            
+            retakePhotoBtn.addEventListener('click', function() {
+                // Clear the captured photo
+                formData.photoUrl = null;
+                
+                // Restart the camera
+                startCameraBtn.click();
+            });
+        }
+
+        // Stop camera stream
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                cameraStream = null;
+            }
+        }
+
+        // Initialize tracking
+        function initTracking() {
+            const startTrackingBtn = document.getElementById('start-tracking');
+            const stopTrackingBtn = document.getElementById('stop-tracking');
+            const saveTrackingBtn = document.getElementById('save-tracking');
+            
+            startTrackingBtn.addEventListener('click', function() {
+                if (tracking) return;
+                
+                if (!navigator.geolocation) {
+                    showToast('Geolocation is not supported by your browser', 'error');
+                    return;
+                }
+                
+                // Start tracking
+                trackingPath = [];
+                tracking = true;
+                
+                // Update UI
+                document.getElementById('tracking-status').textContent = 'Tracking active';
+                startTrackingBtn.disabled = true;
+                stopTrackingBtn.disabled = false;
+                
+                // Start watching position
+                trackingWatchId = navigator.geolocation.watchPosition(
+                    function(position) {
+                        const coords = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        // Add point to tracking path
+                        trackingPath.push(coords);
+                        
+                        // Update UI
+                        updateTrackingUI();
+                        updateCurrentCoordinates(coords);
+                    },
+                    function(error) {
+                        console.error('Error tracking location:', error);
+                        showToast('Error tracking location: ' + error.message, 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 5000
+                    }
+                );
+                
+                showToast('GPS tracking started', 'info');
+            });
+            
+            stopTrackingBtn.addEventListener('click', function() {
+                if (!tracking) return;
+                
+                // Stop tracking
+                stopTracking();
+                
+                // Update UI
+                document.getElementById('tracking-status').textContent = 'Tracking stopped';
+                startTrackingBtn.disabled = false;
+                stopTrackingBtn.disabled = true;
+                saveTrackingBtn.disabled = false;
+                
+                showToast('GPS tracking stopped', 'info');
+            });
+            
+            saveTrackingBtn.addEventListener('click', function() {
+                if (trackingPath.length === 0) {
+                    showToast('No tracking data to save', 'warning');
+                    return;
+                }
+                
+                // Save tracking data
+                const trackData = {
+                    path: trackingPath,
+                    startTime: trackingPath[0].timestamp,
+                    endTime: trackingPath[trackingPath.length - 1].timestamp,
+                    pointCount: trackingPath.length,
+                    distance: calculateTotalDistance(trackingPath)
+                };
+                
+                // Save to local storage
+                const tracks = JSON.parse(localStorage.getItem('savedTracks') || '[]');
+                tracks.push(trackData);
+                localStorage.setItem('savedTracks', JSON.stringify(tracks));
+                
+                // Reset tracking
+                trackingPath = [];
+                updateTrackingUI();
+                
+                // Update UI
+                saveTrackingBtn.disabled = true;
+                
+                showToast('Track saved successfully', 'success');
+            });
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            if (trackingWatchId !== null) {
+                navigator.geolocation.clearWatch(trackingWatchId);
+                trackingWatchId = null;
+            }
+            
+            tracking = false;
+        }
+
+        // Update tracking UI
+        function updateTrackingUI() {
+            document.getElementById('tracking-points').textContent = trackingPath.length;
+            document.getElementById('tracking-distance').textContent = calculateTotalDistance(trackingPath) + ' m';
+        }
+
+        // Update current coordinates display
+        function updateCurrentCoordinates(coords) {
+            if (coords) {
+                document.getElementById('current-coordinates').textContent = 
+                    `Lat: ${coords.latitude.toFixed(6)}, Lng: ${coords.longitude.toFixed(6)}`;
+            } else {
+                document.getElementById('current-coordinates').textContent = 'Waiting for location...';
+            }
+        }
+
+        // Calculate total distance of a path in meters
+        function calculateTotalDistance(path) {
+            if (!path || path.length < 2) return 0;
+            
+            let totalDistance = 0;
+            
+            for (let i = 1; i < path.length; i++) {
+                totalDistance += calculateDistance(
+                    path[i-1].latitude, path[i-1].longitude,
+                    path[i].latitude, path[i].longitude
+                );
+            }
+            
+            return Math.round(totalDistance);
+        }
+
+        // Calculate distance between two coordinates in meters using Haversine formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+            
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            
+            return R * c;
+        }
+
+        // Initialize offline detection
+        function initOfflineDetection() {
+            // Update online status
+            function updateOnlineStatus() {
+                const offlineIndicator = document.getElementById('offline-indicator');
+                
+                if (navigator.onLine) {
+                    offlineIndicator.style.display = 'none';
+                    
+                    // Try to sync when back online
+                    syncPendingSightings();
+                } else {
+                    offlineIndicator.style.display = 'block';
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            
+            // Initial check
+            updateOnlineStatus();
+        }
+
+        // Initialize install prompt
+        function initInstallPrompt() {
+            const installPrompt = document.getElementById('install-prompt');
+            const installBtn = document.getElementById('install-app');
+            const laterBtn = document.getElementById('install-later');
+            
+            // Store the deferred prompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 76+ from automatically showing the prompt
+                e.preventDefault();
+                
+                // Store the event for later use
+                deferredPrompt = e;
+                
+                // Show the install prompt
+                installPrompt.style.display = 'block';
+            });
+            
+            installBtn.addEventListener('click', () => {
+                // Hide the prompt
+                installPrompt.style.display = 'none';
+                
+                // Show the installation prompt
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    
+                    // Wait for user response
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            showToast('App installation accepted', 'success');
+                        } else {
+                            showToast('App installation declined', 'info');
+                        }
+                        
+                        // Clear the deferred prompt
+                        deferredPrompt = null;
+                    });
+                }
+            });
+            
+            laterBtn.addEventListener('click', () => {
+                // Hide the prompt
+                installPrompt.style.display = 'none';
+            });
+            
+            // Handle app installed event
+            window.addEventListener('appinstalled', () => {
+                // Clear the deferred prompt
+                deferredPrompt = null;
+                
+                // Show toast
+                showToast('App installed successfully', 'success');
+            });
+        }
+
+        // Populate the Order dropdown
+        function populateOrderDropdown() {
+            const orderSelect = document.getElementById('order');
+            
+            // Clear existing options except the first one
+            while (orderSelect.options.length > 1) {
+                orderSelect.remove(1);
+            }
+            
+            // Add options for each order
+            taxonomicData.orders.forEach(order => {
+                const option = document.createElement('option');
+                option.value = order;
+                option.textContent = order;
+                orderSelect.appendChild(option);
+            });
+        }
+
+        // Populate the Family dropdown based on selected Order
+        function populateFamilyDropdown() {
+            const familySelect = document.getElementById('family');
+            const selectedOrder = document.getElementById('order').value;
+            
+            // Clear existing options except the first one
+            while (familySelect.options.length > 1) {
+                familySelect.remove(1);
+            }
+            
+            // Disable the dropdown if no order is selected
+            if (!selectedOrder) {
+                familySelect.disabled = true;
+                return;
+            }
+            
+            const families = taxonomicData.families[selectedOrder] || [];
+            
+            // Add options for each family
+            families.forEach(family => {
+                const option = document.createElement('option');
+                option.value = family;
+                option.textContent = family;
+                familySelect.appendChild(option);
+            });
+            
+            // Enable the dropdown
+            familySelect.disabled = false;
+        }
+
+        // Populate the Species dropdown based on selected Family
+        function populateSpeciesDropdown() {
+            const speciesSelect = document.getElementById('species');
+            const selectedFamily = document.getElementById('family').value;
+            
+            // Clear existing options except the first one
+            while (speciesSelect.options.length > 1) {
+                speciesSelect.remove(1);
+            }
+            
+            // Disable the dropdown if no family is selected
+            if (!selectedFamily) {
+                speciesSelect.disabled = true;
+                return;
+            }
+            
+            const species = taxonomicData.species[selectedFamily] || [];
+            
+            // Add options for each species
+            species.forEach(species => {
+                const option = document.createElement('option');
+                option.value = species;
+                option.textContent = species;
+                speciesSelect.appendChild(option);
+            });
+            
+            // Enable the dropdown
+            speciesSelect.disabled = false;
+        }
+
+        // Populate the Habitat dropdown
+        function populateHabitatDropdown() {
+            const habitatSelect = document.getElementById('habitat');
+            
+            // Clear existing options except the first one
+            while (habitatSelect.options.length > 1) {
+                habitatSelect.remove(1);
+            }
+            
+            // Add options for each habitat
+            habitatZones.forEach(habitat => {
+                const option = document.createElement('option');
+                option.value = habitat;
+                option.textContent = habitat;
+                habitatSelect.appendChild(option);
+            });
+        }
+
+        // Create checkboxes for multi-select fields
+        function createCheckboxes(options, container, name, onChange) {
+            // Clear container
+            container.innerHTML = '';
+            
+            // Create a checkbox for each option
+            options.forEach(option => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `${name}-${option.replace(/\s+/g, '-').toLowerCase()}`;
+                checkbox.value = option;
+                checkbox.addEventListener('change', onChange);
+                
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = option;
+                
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Handle order change
+        function handleOrderChange(e) {
+            const value = e.target.value;
+            formData.order = value;
+            formData.family = '';
+            formData.species = '';
+            
+            populateFamilyDropdown();
+            populateSpeciesDropdown();
+            
+            clearError('order');
+        }
+
+        // Handle family change
+        function handleFamilyChange(e) {
+            const value = e.target.value;
+            formData.family = value;
+            formData.species = '';
+            
+            populateSpeciesDropdown();
+            
+            clearError('family');
+        }
+
+        // Handle species change
+        function handleSpeciesChange(e) {
+            const value = e.target.value;
+            formData.species = value;
+            
+            clearError('species');
+        }
+
+        // Handle date change
+        function handleDateChange(e) {
+            const value = e.target.value;
+            formData.date = value;
+            
+            clearError('date');
+        }
+
+        // Handle time change
+        function handleTimeChange(e) {
+            const value = e.target.value;
+            formData.time = value;
+            
+            clearError('time');
+        }
+
+        // Handle coordinate change
+        function handleCoordinateChange(e) {
+            const field = e.target.id;
+            const value = e.target.value;
+            
+            formData[field] = value;
+            
+            clearError(field);
+            clearError('coordinates');
+        }
+
+        // Handle habitat change
+        function handleHabitatChange(e) {
+            const value = e.target.value;
+            formData.habitat = value;
+            
+            clearError('habitat');
+        }
+
+        // Handle water distance change
+        function handleWaterDistanceChange(e) {
+            const value = e.target.value;
+            formData.waterDistance = value;
+            
+            clearError('waterDistance');
+        }
+
+        // Handle group size change
+        function handleGroupSizeChange(e) {
+            const value = e.target.value;
+            formData.groupSize = value;
+            
+            clearError('groupSize');
+        }
+
+        // Handle notes change
+        function handleNotesChange(e) {
+            const value = e.target.value;
+            formData.notes = value;
+        }
+
+        // Handle behavior checkbox change
+        function handleBehaviorChange(e) {
+            const value = e.target.value;
+            const checked = e.target.checked;
+            
+            if (checked) {
+                if (!formData.behaviors.includes(value)) {
+                    formData.behaviors.push(value);
+                }
+            } else {
+                formData.behaviors = formData.behaviors.filter(behavior => behavior !== value);
+            }
+            
+            clearError('behaviors');
+        }
+
+        // Handle weather checkbox change
+        function handleWeatherChange(e) {
+            const value = e.target.value;
+            const checked = e.target.checked;
+            
+            if (checked) {
+                if (!formData.weather.includes(value)) {
+                    formData.weather.push(value);
+                }
+            } else {
+                formData.weather = formData.weather.filter(condition => condition !== value);
+            }
+            
+            clearError('weather');
+        }
+
+        // Get current date in YYYY-MM-DD format
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().split('T')[0];
+        }
+
+        // Get current time in HH:MM format
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toTimeString().slice(0, 5);
+        }
+
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        formData.latitude = position.coords.latitude.toFixed(6);
+                        formData.longitude = position.coords.longitude.toFixed(6);
+                        
+                        document.getElementById('latitude').value = formData.latitude;
+                        document.getElementById('longitude').value = formData.longitude;
+                        
+                        updateCurrentCoordinates({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        });
+                        
+                        clearError('latitude');
+                        clearError('longitude');
+                        clearError('coordinates');
+                        
+                        showToast('Location updated successfully', 'success');
+                    },
+                    function(error) {
+                        console.error('Error getting location:', error);
+                        showToast('Error getting location: ' + error.message, 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                showToast('Geolocation is not supported by your browser', 'error');
+            }
+        }
+
+        // Generate a unique sighting ID
+        function generateSightingId(date) {
+            const dateString = date.replace(/-/g, '');
+            const randomNum = Math.floor(Math.random() * 999).toString().padStart(3, '0');
+            return `${dateString}-${randomNum}`;
+        }
+
+        // Validate form
+        function validateForm() {
+            const errors = {};
+            
+            // Taxonomic validation
+            if (!formData.order) errors.order = 'Order is required';
+            if (!formData.family) errors.family = 'Family is required';
+            if (!formData.species) errors.species = 'Species is required';
+            
+            // Temporal validation
+            if (!formData.date) {
+                errors.date = 'Date is required';
+            } else {
+                const selectedDate = new Date(formData.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate > today) {
+                    errors.date = 'Date cannot be in the future';
+                }
+            }
+            
+            if (!formData.time) errors.time = 'Time is required';
+            
+            // Spatial validation
+            if (!formData.latitude || !formData.longitude) {
+                errors.coordinates = 'GPS coordinates are required';
+            } else {
+                const lat = parseFloat(formData.latitude);
+                const lng = parseFloat(formData.longitude);
+                
+                if (isNaN(lat) || lat < -34.9 || lat > -22.1) {
+                    errors.latitude = 'Latitude must be between -34.9 and -22.1 for South Africa';
+                }
+                
+                if (isNaN(lng) || lng < 16.3 || lng > 32.9) {
+                    errors.longitude = 'Longitude must be between 16.3 and 32.9 for South Africa';
+                }
+            }
+            
+            if (!formData.habitat) errors.habitat = 'Habitat zone is required';
+            
+            if (!formData.waterDistance) {
+                errors.waterDistance = 'Distance from water is required';
+            } else {
+                const distance = parseInt(formData.waterDistance);
+                
+                if (isNaN(distance) || distance < 0 || distance > 5000) {
+                    errors.waterDistance = 'Distance must be between 0 and 5000 meters';
+                }
+            }
+            
+            // Contextual validation
+            if (!formData.groupSize) {
+                errors.groupSize = 'Group size is required';
+            } else {
+                const size = parseInt(formData.groupSize);
+                
+                if (isNaN(size) || size < 1) {
+                    errors.groupSize = 'Group size must be at least 1';
+                }
+            }
+            
+            if (!formData.behaviors || formData.behaviors.length === 0) {
+                errors.behaviors = 'At least one behavior must be selected';
+                document.getElementById('behaviors-container').classList.add('error');
+            } else {
+                document.getElementById('behaviors-container').classList.remove('error');
+            }
+            
+            if (!formData.weather || formData.weather.length === 0) {
+                errors.weather = 'At least one weather condition must be selected';
+                document.getElementById('weather-container').classList.add('error');
+            } else {
+                document.getElementById('weather-container').classList.remove('error');
+            }
+            
+            return errors;
+        }
+
+        // Display error messages
+        function displayErrors(errors) {
+            // Clear all existing errors
+            clearAllErrors();
+            
+            // Display new errors
+            Object.entries(errors).forEach(([field, message]) => {
+                const errorElement = document.getElementById(`${field}-error`);
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
+                
+                // Add error class to input
+                const inputElement = document.getElementById(field);
+                
+                if (inputElement) {
+                    inputElement.classList.add('error');
+                }
+            });
+        }
+
+        // Clear error for a specific field
+        function clearError(field) {
+            const errorElement = document.getElementById(`${field}-error`);
+            
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+            
+            // Remove error class from input
+            const inputElement = document.getElementById(field);
+            
+            if (inputElement) {
+                inputElement.classList.remove('error');
+            }
+            
+            // Special case for checkbox grids
+            if (field === 'behaviors') {
+                document.getElementById('behaviors-container').classList.remove('error');
+            } else if (field === 'weather') {
+                document.getElementById('weather-container').classList.remove('error');
+            }
+        }
+
+        // Clear all errors
+        function clearAllErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            errorElements.forEach(element => {
+                element.textContent = '';
+            });
+            
+            const inputElements = document.querySelectorAll('.form-input, .form-select');
+            inputElements.forEach(element => {
+                element.classList.remove('error');
+            });
+            
+            document.getElementById('behaviors-container').classList.remove('error');
+            document.getElementById('weather-container').classList.remove('error');
+        }
+
+        // Handle form submission
+        function handleSubmit() {
+            // Validate form
+            const validationErrors = validateForm();
+            
+            if (Object.keys(validationErrors).length > 0) {
+                displayErrors(validationErrors);
+                showToast('Please fix the errors in the form', 'error');
+                return;
+            }
+            
+            // Generate sighting ID
+            sightingId = generateSightingId(formData.date);
+            
+            // Add tracking path if tracking was active
+            if (tracking && trackingPath.length > 0) {
+                formData.trackingPath = trackingPath.slice();
+            }
+            
+            // Create sighting object
+            const sighting = {
+                id: sightingId,
+                timestamp: new Date().toISOString(),
+                taxonomy: {
+                    order: formData.order,
+                    family: formData.family,
+                    species: formData.species
+                },
+                observation: {
+                    date: formData.date,
+                    time: formData.time,
+                    groupSize: formData.groupSize,
+                    behaviors: formData.behaviors.slice(),
+                    weather: formData.weather.slice(),
+                    notes: formData.notes
+                },
+                location: {
+                    latitude: parseFloat(formData.latitude),
+                    longitude: parseFloat(formData.longitude),
+                    habitat: formData.habitat,
+                    waterDistance: parseInt(formData.waterDistance)
+                },
+                photoUrl: formData.photoUrl,
+                trackingPath: formData.trackingPath || [],
+                synced: false
+            };
+            
+            // Save to local storage
+            saveSighting(sighting);
+            
+            // Try to sync with server
+            if (navigator.onLine) {
+                trySyncSighting(sighting);
+            } else {
+                // Add to pending sync
+                addToPendingSync(sighting);
+            }
+            
+            // Reset form
+            resetForm();
+            
+            showToast('Sighting saved successfully', 'success');
+        }
+
+        // Save sighting to local storage
+        function saveSighting(sighting) {
+            // Get existing sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Add new sighting
+            sightings.push(sighting);
+            
+            // Save to local storage
+            localStorage.setItem('sightings', JSON.stringify(sightings));
+            
+            // Refresh sightings list
+            loadSavedSightings();
+        }
+
+        // Try to sync sighting with server
+        function trySyncSighting(sighting) {
+            // In a real app, you would send the sighting to a server here
+            // This is a placeholder for demonstration purposes
+            
+            // Simulate successful sync
+            setTimeout(() => {
+                // Update sighting status to synced
+                updateSightingStatus(sighting.id, true);
+                
+                showToast('Sighting synced with server', 'success');
+            }, 1000);
+        }
+
+        // Add sighting to pending sync
+        function addToPendingSync(sighting) {
+            // Get existing pending sightings
+            const pendingSightings = JSON.parse(localStorage.getItem('pendingSightings') || '[]');
+            
+            // Add new sighting
+            pendingSightings.push(sighting.id);
+            
+            // Save to local storage
+            localStorage.setItem('pendingSightings', JSON.stringify(pendingSightings));
+            
+            // Update pending sync indicator
+            updatePendingSyncIndicator();
+        }
+
+        // Update sighting sync status
+        function updateSightingStatus(sightingId, synced) {
+            // Get existing sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Find and update sighting
+            const sightingIndex = sightings.findIndex(s => s.id === sightingId);
+            
+            if (sightingIndex !== -1) {
+                sightings[sightingIndex].synced = synced;
+                
+                // Save to local storage
+                localStorage.setItem('sightings', JSON.stringify(sightings));
+                
+                // Refresh sightings list
+                loadSavedSightings();
+                
+                // Remove from pending sync if synced
+                if (synced) {
+                    removeFromPendingSync(sightingId);
+                }
+            }
+        }
+
+        // Remove sighting from pending sync
+        function removeFromPendingSync(sightingId) {
+            // Get existing pending sightings
+            const pendingSightings = JSON.parse(localStorage.getItem('pendingSightings') || '[]');
+            
+            // Remove sighting
+            const updatedPendingSightings = pendingSightings.filter(id => id !== sightingId);
+            
+            // Save to local storage
+            localStorage.setItem('pendingSightings', JSON.stringify(updatedPendingSightings));
+            
+            // Update pending sync indicator
+            updatePendingSyncIndicator();
+        }
+
+        // Check pending sync
+        function checkPendingSync() {
+            // Get pending sightings
+            const pendingSightings = JSON.parse(localStorage.getItem('pendingSightings') || '[]');
+            
+            // Update indicator
+            updatePendingSyncIndicator();
+            
+            // Try to sync if online
+            if (navigator.onLine && pendingSightings.length > 0) {
+                syncPendingSightings();
+            }
+        }
+
+        // Update pending sync indicator
+        function updatePendingSyncIndicator() {
+            const pendingSightings = JSON.parse(localStorage.getItem('pendingSightings') || '[]');
+            const syncIndicator = document.getElementById('sync-indicator');
+            const pendingCount = document.getElementById('pending-count');
+            
+            if (pendingSightings.length > 0) {
+                pendingCount.textContent = pendingSightings.length;
+                syncIndicator.style.display = 'block';
+            } else {
+                syncIndicator.style.display = 'none';
+            }
+        }
+
+        // Sync pending sightings
+        function syncPendingSightings() {
+            // Get pending sightings
+            const pendingSightingIds = JSON.parse(localStorage.getItem('pendingSightings') || '[]');
+            
+            if (pendingSightingIds.length === 0) return;
+            
+            // Get all sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Filter pending sightings
+            const pendingSightings = sightings.filter(s => pendingSightingIds.includes(s.id));
+            
+            showToast(`Syncing ${pendingSightings.length} sightings...`, 'info');
+            
+            // Sync each sighting
+            pendingSightings.forEach(sighting => {
+                trySyncSighting(sighting);
+            });
+        }
+
+        // Load saved sightings
+        function loadSavedSightings() {
+            // Get existing sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Sort by date (newest first)
+            sightings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const sightingsContainer = document.getElementById('sightings-list-container');
+            const noSightingsMessage = document.getElementById('no-sightings');
+            
+            // Clear container
+            sightingsContainer.innerHTML = '';
+            
+            if (sightings.length === 0) {
+                noSightingsMessage.style.display = 'block';
+                return;
+            }
+            
+            noSightingsMessage.style.display = 'none';
+            
+            // Create sighting cards
+            sightings.forEach(sighting => {
+                const sightingCard = createSightingCard(sighting);
+                sightingsContainer.appendChild(sightingCard);
+            });
+        }
+
+        // Create sighting card
+        function createSightingCard(sighting) {
+            const card = document.createElement('li');
+            card.className = 'sighting-card';
+            card.dataset.id = sighting.id;
+            
+            const formattedDate = new Date(sighting.timestamp).toLocaleString();
+            
+            // Create card content
+            card.innerHTML = `
+                <div class="sighting-header">
+                    <div class="sighting-title">${sighting.taxonomy.species}</div>
+                    <div class="sighting-date">${formattedDate}</div>
+                </div>
+                <div class="sighting-details">
+                    <div><strong>Location:</strong> ${sighting.location.habitat}</div>
+                    <div><strong>Group Size:</strong> ${sighting.observation.groupSize}</div>
+                    <div><strong>Behaviors:</strong> ${sighting.observation.behaviors.join(', ')}</div>
+                </div>
+                <div class="sighting-tags">
+                    ${sighting.synced ? 
+                        '<span class="sighting-tag" style="background-color: #bbf7d0; color: #15803d;">Synced</span>' : 
+                        '<span class="sighting-tag" style="background-color: #fef3c7; color: #d97706;">Pending Sync</span>'}
+                    ${sighting.photoUrl ? '<span class="sighting-tag">Has Photo</span>' : ''}
+                    ${sighting.trackingPath && sighting.trackingPath.length > 0 ? 
+                        `<span class="sighting-tag">Track: ${sighting.trackingPath.length} points</span>` : ''}
+                </div>
+                ${sighting.photoUrl ? 
+                    `<img src="${sighting.photoUrl}" alt="Wildlife sighting" class="sighting-photo">` : ''}
+                <div class="sighting-actions">
+                    <button class="btn btn-secondary btn-sm view-sighting" data-id="${sighting.id}">View</button>
+                    <button class="btn btn-danger btn-sm delete-sighting" data-id="${sighting.id}">Delete</button>
+                </div>
+            `;
+            
+            // Add event listeners
+            card.querySelector('.view-sighting').addEventListener('click', function() {
+                viewSighting(sighting.id);
+            });
+            
+            card.querySelector('.delete-sighting').addEventListener('click', function() {
+                deleteSighting(sighting.id);
+            });
+            
+            return card;
+        }
+
+        // View sighting details
+        function viewSighting(sightingId) {
+            // Get sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Find sighting
+            const sighting = sightings.find(s => s.id === sightingId);
+            
+            if (!sighting) {
+                showToast('Sighting not found', 'error');
+                return;
+            }
+            
+            // Show details (in a real app, you would show a modal or navigate to a details page)
+            showToast('Sighting details would be shown here', 'info');
+            console.log('Sighting details:', sighting);
+        }
+
+        // Delete sighting
+        function deleteSighting(sightingId) {
+            if (!confirm('Are you sure you want to delete this sighting?')) {
+                return;
+            }
+            
+            // Get sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            // Remove sighting
+            const updatedSightings = sightings.filter(s => s.id !== sightingId);
+            
+            // Save to local storage
+            localStorage.setItem('sightings', JSON.stringify(updatedSightings));
+            
+            // Remove from pending sync if needed
+            removeFromPendingSync(sightingId);
+            
+            // Refresh sightings list
+            loadSavedSightings();
+            
+            showToast('Sighting deleted successfully', 'success');
+        }
+
+        // Export all sightings as CSV
+        function exportAllSightings() {
+            // Get sightings
+            const sightings = JSON.parse(localStorage.getItem('sightings') || '[]');
+            
+            if (sightings.length === 0) {
+                showToast('No sightings to export', 'warning');
+                return;
+            }
+            
+            // Create CSV header
+            const headers = [
+                'ID',
+                'Timestamp',
+                'Order',
+                'Family',
+                'Species',
+                'Date',
+                'Time',
+                'Group Size',
+                'Behaviors',
+                'Weather',
+                'Notes',
+                'Latitude',
+                'Longitude',
+                'Habitat',
+                'Water Distance (m)',
+                'Has Photo',
+                'Has Track',
+                'Synced'
+            ].join(',');
+            
+            // Create CSV rows
+            const rows = sightings.map(s => {
+                return [
+                    s.id,
+                    s.timestamp,
+                    s.taxonomy.order,
+                    s.taxonomy.family,
+                    s.taxonomy.species,
+                    s.observation.date,
+                    s.observation.time,
+                    s.observation.groupSize,
+                    `"${s.observation.behaviors.join('; ')}"`,
+                    `"${s.observation.weather.join('; ')}"`,
+                    `"${s.observation.notes}"`,
+                    s.location.latitude,
+                    s.location.longitude,
+                    s.location.habitat,
+                    s.location.waterDistance,
+                    s.photoUrl ? 'Yes' : 'No',
+                    s.trackingPath && s.trackingPath.length > 0 ? 'Yes' : 'No',
+                    s.synced ? 'Yes' : 'No'
+                ].join(',');
+            });
+            
+            // Combine header and rows
+            const csv = [headers, ...rows].join('\n');
+            
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wildlife_sightings_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('Sightings exported successfully', 'success');
+        }
+
+        // Reset form
+        function resetForm() {
+            // Reset form data
+            formData = {
+                order: '',
+                family: '',
+                species: '',
+                date: getCurrentDate(),
+                time: getCurrentTime(),
+                latitude: '',
+                longitude: '',
+                habitat: '',
+                waterDistance: '',
+                groupSize: '',
+                behaviors: [],
+                weather: [],
+                notes: '',
+                photoUrl: null,
+                trackingPath: []
+            };
+            
+            // Reset form elements
+            document.getElementById('order').value = '';
+            document.getElementById('family').value = '';
+            document.getElementById('species').value = '';
+            document.getElementById('date').value = formData.date;
+            document.getElementById('time').value = formData.time;
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('habitat').value = '';
+            document.getElementById('waterDistance').value = '';
+            document.getElementById('groupSize').value = '';
+            document.getElementById('notes').value = '';
+            
+            // Disable dependent dropdowns
+            document.getElementById('family').disabled = true;
+            document.getElementById('species').disabled = true;
+            
+            // Uncheck all behaviors
+            const behaviorCheckboxes = document.querySelectorAll('#behaviors-container input[type="checkbox"]');
+            behaviorCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Uncheck all weather conditions
+            const weatherCheckboxes = document.querySelectorAll('#weather-container input[type="checkbox"]');
+            weatherCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset photo
+            if (cameraStream) {
+                stopCamera();
+            }
+            
+            document.getElementById('camera-container').style.display = 'block';
+            document.getElementById('photo-preview').style.display = 'none';
+            document.getElementById('retake-photo').style.display = 'none';
+            document.getElementById('capture-photo').disabled = true;
+            
+            // Clear errors
+            clearAllErrors();
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Add icon based on type
+            let icon = '';
+            
+            switch (type) {
+                case 'success':
+                    icon = '<svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+                    break;
+                case 'error':
+                    icon = '<svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+                    break;
+                case 'warning':
+                    icon = '<svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+                    break;
+                default:
+                    icon = '<svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+            }
+            
+            toast.innerHTML = `${icon}<span class="toast-message">${message}</span>`;
+            
+            // Add toast to container
+            toastContainer.appendChild(toast);
+            
+            // Show toast with animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Cleanup when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            // Stop camera if active
+            if (cameraStream) {
+                stopCamera();
+            }
+            
+            // Stop tracking if active
+            if (tracking) {
+                stopTracking();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "name": "Wildlife Sighting Tracker",
+  "short_name": "Wildlife Tracker",
+  "description": "Track wildlife sightings in South Africa with photos and GPS tracking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#15803d",
+  "theme_color": "#15803d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot1.png",
+      "type": "image/png",
+      "sizes": "540x1080"
+    },
+    {
+      "src": "screenshots/screenshot2.png",
+      "type": "image/png",
+      "sizes": "540x1080"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Sighting",
+      "short_name": "New",
+      "description": "Record a new wildlife sighting",
+      "url": "/?tab=new-sighting",
+      "icons": [{ "src": "icons/new-sighting.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "GPS Tracking",
+      "short_name": "Track",
+      "description": "Start GPS tracking",
+      "url": "/?tab=tracking",
+      "icons": [{ "src": "icons/tracking.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "utilities"]
+}
