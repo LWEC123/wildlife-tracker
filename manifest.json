@@ -1,7 +1,7 @@
 {
-  "name": "Wildlife Sighting Tracker",
-  "short_name": "Wildlife Tracker",
-  "description": "Track wildlife sightings in South Africa with photos and GPS tracking",
+  "name": "Limpopo Wildlife Eco College Tracker",
+  "short_name": "LWEC Tracker",
+  "description": "Track wildlife sightings with Limpopo Wildlife Eco College with photos and GPS tracking",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#15803d",
